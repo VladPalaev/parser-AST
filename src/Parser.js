@@ -42,6 +42,7 @@ class Parser {
      * BlockStatement
      * EmptyStatement
      * VariableStatement
+     * IfStatement
      */
     Statement() {
         switch (this.lookahead.type) {
@@ -49,10 +50,36 @@ class Parser {
                 return this.VariableStatement()
             case ';':
                 return this.EmptyStatement();
+            case 'if':
+                return this.IfStatement();
             case '{':
                 return this.BlockStatement();
             default:
                 return this.ExpressionStatement();
+        }
+    }
+    /**
+     * IfStatement
+     *  : 'if' '(' Expression ')' Statement
+     *  : 'if' '(' Expression ')' Statement 'else' Statement
+     */
+    IfStatement() {
+        this._eat('if')
+        this._eat('(');
+        const test = this.Expression();
+        this._eat(')');
+
+        const consequent = this.Statement();
+
+        const alternate = this.lookahead !== null && this.lookahead.type === 'else'
+                    ? this._eat('else') && this.Statement()
+                    : null;
+        
+        return {
+            type: "IfStatement",
+            test,
+            consequent,
+            alternate
         }
     }
 
